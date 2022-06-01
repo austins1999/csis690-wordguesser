@@ -48,7 +48,7 @@ rubocop: # Name
     - docker-compose up -d
   script:
     #- docker-compose run --rm test || exit $? # Run the Tests and pass the docker exit code from the container back to the script to repeat
-    - docker compose run web rubocop || exit $? # i deleted --rm not sure if that's bad.
+    - docker-compose run web rubocop || exit $? # i deleted --rm not sure if that's bad.
 
 unit-test-job:   # This job runs in the test stage.
   stage: test_unit    # Stage 
@@ -58,7 +58,7 @@ unit-test-job:   # This job runs in the test stage.
     - docker-compose up -d
   script:
     #- docker-compose run --rm test || exit $? # Run the Tests and pass the docker exit code from the container back to the script to repeat
-    - docker compose run web rspec || exit $? # i deleted --rm not sure if that's bad.
+    - docker-compose run web rspec || exit $? # i deleted --rm not sure if that's bad.
 
 
 integration-test-job:   # This job runs in the test stage.
@@ -69,7 +69,7 @@ integration-test-job:   # This job runs in the test stage.
     - docker-compose up -d
   script:
     #- docker-compose run --rm test || exit $? # Run the Tests and pass the docker exit code from the container back to the script to repeat
-    - docker compose run web cucumber || exit $? # i deleted --rm not sure if that's bad.
+    - docker-compose run web cucumber || exit $? # i deleted --rm not sure if that's bad.
 
 
 # I will add deploy steps here for heroku after I write the heroku.yml file
