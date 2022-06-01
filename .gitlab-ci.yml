@@ -25,7 +25,6 @@ stages:
   - test_integration
   - deploy
 
-# I didn't change anything here
 # This job runs in the build stage, which runs first.
 build-job:  # Name  
   stage: build # Stage
@@ -39,36 +38,32 @@ build-job:  # Name
     - docker-compose build
   
 
-# not sure how this will work yet, but it def doesn't work with docker compose run web rubocop
 rubocop: # Name
   stage: static_analysis    # Stage 
   image: aymdev/dind-compose # Override the Base Image
   before_script: # Before script to make sure that everything is properly built before running tests (db, backend, frontend, test container)
-    - docker-compose build # do I need parallel? --parallel
+    - docker-compose build 
     - docker-compose up -d
   script:
-    #- docker-compose run --rm test || exit $? # Run the Tests and pass the docker exit code from the container back to the script to repeat
-    - docker-compose run web rubocop || exit $? # i deleted --rm not sure if that's bad.
+    - docker-compose run web rubocop --fail-level error || exit $? 
 
 unit-test-job:   # This job runs in the test stage.
   stage: test_unit    # Stage 
   image: aymdev/dind-compose # Override the Base Image
   before_script: # Before script to make sure that everything is properly built before running tests (db, backend, frontend, test container)
-    - docker-compose build # do I need parallel? --parallel
+    - docker-compose build 
     - docker-compose up -d
   script:
-    #- docker-compose run --rm test || exit $? # Run the Tests and pass the docker exit code from the container back to the script to repeat
-    - docker-compose run web rspec || exit $? # i deleted --rm not sure if that's bad.
+    - docker-compose run web rspec || exit $?
 
 
 integration-test-job:   # This job runs in the test stage.
   stage: test_integration    # Stage 
   image: aymdev/dind-compose # Override the Base Image
   before_script: # Before script to make sure that everything is properly built before running tests (db, backend, frontend, test container)
-    - docker-compose build # do I need parallel? --parallel
+    - docker-compose build 
     - docker-compose up -d
   script:
-    #- docker-compose run --rm test || exit $? # Run the Tests and pass the docker exit code from the container back to the script to repeat
     - docker-compose run web cucumber || exit $? # i deleted --rm not sure if that's bad.
 
 
