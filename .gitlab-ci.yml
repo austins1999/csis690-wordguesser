@@ -71,9 +71,11 @@ integration-test-job:   # This job runs in the test stage.
 # here is some boilerplate but I don't think it works for containerized apps
 # This deploy job uses a simple deploy flow to Heroku, other providers, e.g. AWS Elastic Beanstalk
 # are supported too: https://github.com/travis-ci/dpl
-#deploy:
-#  stage: deploy
-#  environment: production
-#  script:
-#    - gem install dpl
-#    - dpl --provider=heroku --app=$HEROKU_APP_NAME --api-key=$HEROKU_PRODUCTION_KEY
+deploy:
+  stage: deploy
+  environment: production
+  script:
+    - gem install dpl
+    - dpl --provider=heroku --app=$HEROKU_APP_NAME --api-key=$HEROKU_PRODUCTION_KEY
+  only:
+    - main
