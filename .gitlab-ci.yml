@@ -39,6 +39,6 @@ deploy:
     - apk add ruby-dev
     - apk add git
     - gem install dpl
-    - dpl --provider=heroku --app=$HEROKU_APP_NAME --api-key=$HEROKU_PRODUCTION_KEY
+    - dpl heroku api --app=$HEROKU_APP_NAME --api_key=$HEROKU_PRODUCTION_KEY
   only:
     - main
