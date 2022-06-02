@@ -19,10 +19,10 @@ before_script:
 
  # List of stages for jobs, and their order of execution
 stages:         
-  - build
-  - static_analysis
-  - test_unit
-  - test_integration
+#  - build
+#  - static_analysis
+#  - test_unit
+#  - test_integration
   - deploy
 
 # This job runs in the build stage, which runs first.
@@ -73,10 +73,10 @@ integration-test-job:   # This job runs in the test stage.
 # are supported too: https://github.com/travis-ci/dpl
 deploy:
   stage: deploy
+#  image: alpine:3
   environment: production
   script:
-    - apt-get update -yq
-    - apt-get install -y ruby-dev
+    - apk add ruby-dev
     - gem install dpl
     - dpl --provider=heroku --app=$HEROKU_APP_NAME --api-key=$HEROKU_PRODUCTION_KEY
   only:
