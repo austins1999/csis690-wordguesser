@@ -19,30 +19,66 @@ before_script:
 
  # List of stages for jobs, and their order of execution
 stages:         
-#  - build
-#  - static_analysis
-#  - test_unit
-#  - test_integration
+  - build
+  - static_analysis
+  - test_unit
+  - test_integration
   - deploy
 
+# This job runs in the build stage, which runs first.
+build-job:  # Name  
+  stage: build # Stage
+  image: aymdev/dind-compose # Override the Base Image so we can have Compose
+  before_script: # Scripts that run first -> typically "setup/verify everything is started correctly"
+    - docker version
+    - apk add --no-cache py-pip
+    - pip install docker-compose
+    - docker-compose version 
+  script: # Main part of the build-stage
+    - docker-compose build
+  
+
+rubocop: # Name
+  stage: static_analysis    # Stage 
+  image: aymdev/dind-compose # Override the Base Image
+  before_script: # Before script to make sure that everything is properly built before running tests (db, backend, frontend, test container)
+    - docker-compose build 
+    - docker-compose up -d
+  script:
+    - docker-compose run web rubocop --fail-level error || exit $? 
+
+unit-test-job:   # This job runs in the test stage.
+  stage: test_unit    # Stage 
+  image: aymdev/dind-compose # Override the Base Image
+  before_script: # Before script to make sure that everything is properly built before running tests (db, backend, frontend, test container)
+    - docker-compose build 
+    - docker-compose up -d
+  script:
+    - docker-compose run web rspec || exit $?
 
 
-# I will add deploy steps here for heroku after I write the heroku.yml file
-# here is some boilerplate but I don't think it works for containerized apps
-# This deploy job uses a simple deploy flow to Heroku, other providers, e.g. AWS Elastic Beanstalk
+integration-test-job:   # This job runs in the test stage.
+  stage: test_integration    # Stage 
+  image: aymdev/dind-compose # Override the Base Image
+  before_script: # Before script to make sure that everything is properly built before running tests (db, backend, frontend, test container)
+    - docker-compose build 
+    - docker-compose up -d
+  script:
+    - docker-compose run web cucumber || exit $? # i deleted --rm not sure if that's bad.
+
+# This deploy job uses a simple (HAHA) deploy flow to Heroku, other providers, e.g. AWS Elastic Beanstalk
 # are supported too: https://github.com/travis-ci/dpl
 deploy:
   stage: deploy
-#  image: alpine:3
   environment: production
   script:
-    - apk add ruby-dev
-    - apk add git
-    - apk add curl
-    - gem install json_pure
-    - gem install faraday -v 1.8.0
-    - gem install dpl
-    - gem install dpl-heroku
+    - apk add ruby-dev # dpl needs ruby
+    - apk add git # container doesn't have git for some reason
+    - apk add curl # or curl?!?
+    - gem install json_pure # another dumb error message removed by this line
+    - gem install faraday -v 1.8.0 # this is getting old.
+    - gem install dpl # this is the only line in the docs
+    - gem install dpl-heroku # another one for fun
     - dpl --provider=heroku --app=$HEROKU_APP_NAME --api-key=$HEROKU_PRODUCTION_KEY
   only:
     - main
