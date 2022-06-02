@@ -38,6 +38,7 @@ deploy:
   script:
     - apk add ruby-dev
     - apk add git
+    - gem install json_pure
     - gem install faraday -v 1.8.0
     - gem install dpl
     - gem install dpl-heroku
