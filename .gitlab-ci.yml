@@ -38,6 +38,7 @@ deploy:
   script:
     - apk add ruby-dev
     - apk add git
+    - gem install dpl
     - gem install dpl-heroku
     - dpl heroku api --app=$HEROKU_APP_NAME --api_key=$HEROKU_PRODUCTION_KEY
   only:
