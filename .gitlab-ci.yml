@@ -48,6 +48,7 @@ rubocop: # Name
     - docker run $CONTAINER_TEST_IMAGE rubocop --fail-level error || exit $?
 
 # https://docs.gitlab.com/ee/ci/testing/unit_test_reports.html
+# unit test reports added.
 unit-test-job:   # This job runs in the test stage.
   stage: test_unit    # Stage 
   script:
