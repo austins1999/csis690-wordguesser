@@ -22,7 +22,6 @@ before_script:
   - docker info
   - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
 
-
  # List of stages for jobs, and their order of execution
 stages:         
   - build
@@ -34,50 +33,29 @@ stages:
 # This job runs in the build stage, which runs first.
 build-job:  # Name  
   stage: build # Stage
-  # forget about compose for now.
-  # image: aymdev/dind-compose # Override the Base Image so we can have Compose
-  before_script: # Scripts that run first -> typically "setup/verify everything is started correctly"
+  before_script: 
     - docker version
+    # needs to login here too apparently.
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-
-#    - apk add --no-cache py-pip
-#    - pip install docker-compose
-#    - docker-compose version 
   script: # Main part of the build-stage
-#    - docker-compose build
     - docker build --pull -t $CONTAINER_TEST_IMAGE .
     - docker push $CONTAINER_TEST_IMAGE  
 
 rubocop: # Name
   stage: static_analysis    # Stage 
-#  image: aymdev/dind-compose # Override the Base Image
-#  before_script: # Before script to make sure that everything is properly built before running tests (db, backend, frontend, test container)
- #   - docker-compose build 
- #   - docker-compose up -d
   script:
-#    - docker-compose run web rubocop --fail-level error || exit $? 
     - docker pull $CONTAINER_TEST_IMAGE
     - docker run $CONTAINER_TEST_IMAGE rubocop --fail-level error || exit $?
 
 unit-test-job:   # This job runs in the test stage.
   stage: test_unit    # Stage 
-#  image: aymdev/dind-compose # Override the Base Image
-#  before_script: # Before script to make sure that everything is properly built before running tests (db, backend, frontend, test container)
-#    - docker-compose build 
-#    - docker-compose up -d
   script:
- #   - docker-compose run web rspec || exit $?
     - docker pull $CONTAINER_TEST_IMAGE
     - docker run $CONTAINER_TEST_IMAGE rspec || exit $?
 
 integration-test-job:   # This job runs in the test stage.
   stage: test_integration    # Stage 
-#  image: aymdev/dind-compose # Override the Base Image
-#  before_script: # Before script to make sure that everything is properly built before running tests (db, backend, frontend, test container)
-#    - docker-compose build 
-#    - docker-compose up -d
   script:
-#    - docker-compose run web cucumber || exit $? # i deleted --rm not sure if that's bad.
     - docker pull $CONTAINER_TEST_IMAGE
     - docker run $CONTAINER_TEST_IMAGE cucumber || exit $?
 
