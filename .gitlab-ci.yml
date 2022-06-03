@@ -6,6 +6,10 @@ variables:
   DOCKER_DRIVER: overlay2
   DOCKER_TLS_CERTDIR: ""
   DOCKER_HOST: tcp://docker:2375
+  CONTAINER_TEST_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
+  CONTAINER_RELEASE_IMAGE: $CI_REGISTRY_IMAGE:latest
+  # $CI_REGISTRY_IMAGE is the address of the registry tied to this project.
+  # $CI_COMMIT_REF_NAME resolves to branch or tag name it is safer to use $CI_COMMIT_REF_SLUG as the image tag. 
 
 # CI/CD Service definition -> More Requirements for Docker in Docker
 services:
@@ -16,6 +20,7 @@ services:
 # Ran Before Every Script -> Good Practice to Make sure Docker is setup Correctly
 before_script:
   - docker info
+  - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
 
  # List of stages for jobs, and their order of execution
 stages:         
@@ -28,43 +33,43 @@ stages:
 # This job runs in the build stage, which runs first.
 build-job:  # Name  
   stage: build # Stage
-  image: aymdev/dind-compose # Override the Base Image so we can have Compose
-  before_script: # Scripts that run first -> typically "setup/verify everything is started correctly"
+  before_script: 
     - docker version
-    - apk add --no-cache py-pip
-    - pip install docker-compose
-    - docker-compose version 
+    # needs to login here too apparently.
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
   script: # Main part of the build-stage
-    - docker-compose build
-  
+    - docker build --pull -t $CONTAINER_TEST_IMAGE .
+    - docker push $CONTAINER_TEST_IMAGE  
 
 rubocop: # Name
   stage: static_analysis    # Stage 
-  image: aymdev/dind-compose # Override the Base Image
-  before_script: # Before script to make sure that everything is properly built before running tests (db, backend, frontend, test container)
-    - docker-compose build 
-    - docker-compose up -d
   script:
-    - docker-compose run web rubocop --fail-level error || exit $? 
+    - docker pull $CONTAINER_TEST_IMAGE
+    - docker run $CONTAINER_TEST_IMAGE rubocop --fail-level error || exit $?
 
+# https://docs.gitlab.com/ee/ci/testing/unit_test_reports.html
+# unit test reports not working...
 unit-test-job:   # This job runs in the test stage.
   stage: test_unit    # Stage 
-  image: aymdev/dind-compose # Override the Base Image
-  before_script: # Before script to make sure that everything is properly built before running tests (db, backend, frontend, test container)
-    - docker-compose build 
-    - docker-compose up -d
   script:
-    - docker-compose run web rspec || exit $?
+    - docker pull $CONTAINER_TEST_IMAGE
+    #- docker run $CONTAINER_TEST_IMAGE rspec --format progress --format RspecJunitFormatter --out rspec.xml || exit $?
+    - docker run $CONTAINER_TEST_IMAGE rspec || exit $?
+#  artifacts:
+#    when: always
+#    paths:
+#      - rspec.xml
+#    reports:
+#      junit: rspec.xml
 
+# TODO: fancy coverage reports from simplecov in gitlab: 
+# https://dev.to/omrisama/getting-started-with-simplecov-in-gitlab-ci-259e
 
 integration-test-job:   # This job runs in the test stage.
   stage: test_integration    # Stage 
-  image: aymdev/dind-compose # Override the Base Image
-  before_script: # Before script to make sure that everything is properly built before running tests (db, backend, frontend, test container)
-    - docker-compose build 
-    - docker-compose up -d
   script:
-    - docker-compose run web cucumber || exit $? # i deleted --rm not sure if that's bad.
+    - docker pull $CONTAINER_TEST_IMAGE
+    - docker run $CONTAINER_TEST_IMAGE cucumber || exit $?
 
 # This deploy job uses a simple (HAHA) deploy flow to Heroku, other providers, e.g. AWS Elastic Beanstalk
 # are supported too: https://github.com/travis-ci/dpl
