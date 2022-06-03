@@ -47,11 +47,21 @@ rubocop: # Name
     - docker pull $CONTAINER_TEST_IMAGE
     - docker run $CONTAINER_TEST_IMAGE rubocop --fail-level error || exit $?
 
+# https://docs.gitlab.com/ee/ci/testing/unit_test_reports.html
 unit-test-job:   # This job runs in the test stage.
   stage: test_unit    # Stage 
   script:
     - docker pull $CONTAINER_TEST_IMAGE
-    - docker run $CONTAINER_TEST_IMAGE rspec || exit $?
+    - docker run $CONTAINER_TEST_IMAGE rspec --format progress --format RspecJunitFormatter --out rspec.xml || exit $?
+  artifacts:
+    when: always
+    paths:
+      - rspec.xml
+    reports:
+      junit: rspec.xml
+
+# TODO: fancy coverage reports from simplecov in gitlab: 
+# https://dev.to/omrisama/getting-started-with-simplecov-in-gitlab-ci-259e
 
 integration-test-job:   # This job runs in the test stage.
   stage: test_integration    # Stage 
