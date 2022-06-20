@@ -16,6 +16,12 @@ env:
     # GITHUB_ACTOR is the user who initiated the workflow
     # GITHUB_REF_NAME is the branch/tag that initiated the workflow
     # :latest specifies the most recent version (duh)
+    
+# CI/CD Service definition -> More Requirements for Docker in Docker
+services:
+  - name: docker:dind
+    entrypoint: ["env", "-u", "DOCKER_HOST"]
+    command: ["dockerd-entrypoint.sh"]
 
 jobs:
 
@@ -49,7 +55,7 @@ jobs:
     - name: Set up Ruby
       uses: ruby/setup-ruby@f20f1eae726df008313d2e0d78c5e602562a1bcf
       with:
-        ruby-version: 2.6
+        ruby-version: 2.6.6
 
     # This step is not necessary if you add the gem to your Gemfile
     #- name: Install Code Scanning integration
