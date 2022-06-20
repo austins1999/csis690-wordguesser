@@ -74,7 +74,7 @@ jobs:
       HEROKU_PRODUCTION_KEY: ${{ secrets.HEROKU_PRODUCTION_KEY }}
     
     steps:
-      run: apk add ruby-dev # dpl needs ruby
+      - run: apk add ruby-dev # dpl needs ruby
       run: apk add git # container doesn't have git for some reason
       run: apk add curl # or curl?!?
       run: gem install json_pure # another dumb error message removed by this line
