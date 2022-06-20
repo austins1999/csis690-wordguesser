@@ -13,7 +13,7 @@ class WordGuesserGame
       raise ArgumentError
     end
     letter = letter[0].downcase
-    if  @word.include?(letter) && !@guesses.include?(letter)
+    if @word.include?(letter) && !@guesses.include?(letter)
       @guesses += letter
     elsif !@word.include?(letter) && !@wrong_guesses.include?(letter)
       @wrong_guesses += letter
@@ -23,7 +23,7 @@ class WordGuesserGame
   end
 
   def word_with_guesses
-    @word.gsub(/./)  { |letter| @guesses.include?(letter) ? letter : '-' }
+    @word.gsub(/./) { |letter| @guesses.include?(letter) ? letter : '-' }
   end
 
   def check_win_or_lose
@@ -42,9 +42,6 @@ class WordGuesserGame
     require 'uri'
     require 'net/http'
     uri = URI('http://randomword.saasbook.info/RandomWord')
-    Net::HTTP.new('randomword.saasbook.info').start { |http|
-      return http.post(uri, "").body
-    }
+    Net::HTTP.new('randomword.saasbook.info').start { |http| return http.post(uri, '').body }
   end
-
 end

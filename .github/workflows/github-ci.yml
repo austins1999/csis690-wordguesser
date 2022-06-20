@@ -31,11 +31,6 @@ jobs:
 
     - name: Rubocop run
       run: bundle exec rubocop
-      #run: |
-        #bash -c "
-          #bundle exec rubocop --require code_scanning --format CodeScanning::SarifFormatter -o rubocop.sarif
-          #[[ $? -ne 2 ]]
-        #"
              
 
   unit_testing:
