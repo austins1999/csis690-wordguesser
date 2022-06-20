@@ -77,9 +77,9 @@ jobs:
       - name: dpl needs ruby
         run: sudo apt-get install ruby-dev
       - name: container doesn't have git for some reason
-        run: apk add git 
+        run: sudo apt-get add git 
       - name: or curl
-        run: apk add curl
+        run: sudo apt-get add curl
       - name: another dumb error message removed by this line
         run: gem install json_pure
       - name: this is getting old.
