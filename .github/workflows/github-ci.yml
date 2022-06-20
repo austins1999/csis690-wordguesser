@@ -36,7 +36,7 @@ jobs:
     #- name: Build the Docker image
       #run: docker build . --file Dockerfile --tag https://ghcr.io/$GITHUB_ACTOR/$GITHUB_REF_NAME:latest
     - name: Build the Docker image
-      run: docker build --pull -t https://ghcr.io/$GITHUB_ACTOR/$GITHUB_REF_NAME:latest .
+      run: docker build --pull https://ghcr.io/$GITHUB_ACTOR/$GITHUB_REF_NAME:latest .
     - name: Push the Docker image
       run: docker push https://ghcr.io/$GITHUB_ACTOR/$GITHUB_REF_NAME:latest  
 
