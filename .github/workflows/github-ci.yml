@@ -11,7 +11,7 @@ env:
   DOCKER_DRIVER: overlay2
   DOCKER_TLS_CERTDIR: ""
   DOCKER_HOST: tcp://docker:2375
-  CONTAINER_IMAGE: https://ghcr.io/$GITHUB_ACTOR/$GITHUB_REF_NAME:latest
+  CONTAINER_IMAGE: https://ghcr.io/$GITHUB_ACTOR/$GITHUB_REF_NAME_SLUG:latest
     # https://ghcr.io/ is the container registry
     # GITHUB_ACTOR is the user who initiated the workflow
     # GITHUB_REF_NAME is the branch/tag that initiated the workflow
