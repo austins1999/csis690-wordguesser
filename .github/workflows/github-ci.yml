@@ -75,7 +75,7 @@ jobs:
     
     steps:
       - name: dpl needs ruby
-        run: apt-get install ruby-dev
+        run: sudo apt-get install ruby-dev
       - name: container doesn't have git for some reason
         run: apk add git 
       - name: or curl
