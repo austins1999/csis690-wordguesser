@@ -1,47 +1,18 @@
 
 name: GitHub CI
 
+
 on:
   push:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
 
-#env:
-  #DOCKER_DRIVER: overlay2
-  #DOCKER_TLS_CERTDIR: ""
-  #DOCKER_HOST: tcp://docker:2375
-  #CONTAINER_IMAGE: https://ghcr.io/$GITHUB_ACTOR/$GITHUB_REF_NAME:latest
-    # https://ghcr.io/ is the container registry
-    # GITHUB_ACTOR is the user who initiated the workflow
-    # GITHUB_REF_NAME is the branch/tag that initiated the workflow
-    # :latest specifies the most recent version (duh)
-    
-## CI/CD Service definition -> More Requirements for Docker in Docker
-#services:
-  #- name: docker:dind
-    #entrypoint: ["env", "-u", "DOCKER_HOST"]
-    #command: ["dockerd-entrypoint.sh"]
 
 jobs:
 
-  #build:
 
-    #runs-on: ubuntu-latest
-
-    #steps:
-    #- uses: actions/checkout@v3
-    #- name: Pre-check that Docker is installed
-      #run: docker version
-    ##- name: Build the Docker image
-      ##run: docker build . --file Dockerfile --tag https://ghcr.io/$GITHUB_ACTOR/$GITHUB_REF_NAME:latest
-    #- name: Build the Docker image
-      #run: docker build --pull https://ghcr.io/$GITHUB_ACTOR/$GITHUB_REF_NAME:latest .
-    #- name: Push the Docker image
-      #run: docker push https://ghcr.io/$GITHUB_ACTOR/$GITHUB_REF_NAME:latest  
-
-
-  rubocop:
+  static_analysis:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -64,35 +35,79 @@ jobs:
           bundle exec rubocop --require code_scanning --format CodeScanning::SarifFormatter -o rubocop.sarif
           [[ $? -ne 2 ]]
         "
-        
+             
 
-  #deploy:
-    #runs-on: ubuntu-latest
-    
-    #env:
-      #HEROKU_APP_NAME: 
-      #HEROKU_PRODUCTION_KEY: ${{ secrets.HEROKU_PRODUCTION_KEY }}
-    
-    #steps:
-      #- name: dpl needs ruby
-        #run: sudo apt-get install ruby-dev
-      #- name: container doesn't have git for some reason
-        #run: sudo apt-get install git 
-      #- name: or curl
-        #run: sudo apt-get install curl
-      #- name: another dumb error message removed by this line
-        #run: sudo gem install json_pure
-      #- name: this is getting old.
-        #run: sudo gem install faraday -v 1.8.0
-      #- name: this is the only line in the docs
-        #run: sudo gem install dpl
-      #- name: another one for fun
-        #run: sudo gem install dpl-heroku
-      #- name: finally, deploying
-        #run: dpl --provider=heroku --app=env.HEROKU_APP_NAME --api-key=env.HEROKU_PRODUCTION_KEY
+  unit_testing:
+   runs-on: ubuntu-latest
+    container:
+      image: ruby:2.6.6
+
+    services:
+      postgres:
+        image: postgres:10.8
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: ""
+          POSTGRES_DB: postgres
+        ports:
+        - 5432:5432
+        # needed because the postgres container does not provide a healthcheck
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+
+    steps:
+    - uses: actions/checkout@v1
+
+    - uses: actions/setup-node@v1
+      with:
+        node-version: '10.x'
+        registry-url: 'https://registry.npmjs.org'
+
+    - name: Gem cache
+      id: cache-bundle
+      uses: actions/cache@v1
+      with:
+        path: vendor/bundle
+        key: bundle-${{ hashFiles('**/Gemfile.lock') }}
+
+    - name: Bundle install
+      env:
+        RAILS_ENV: test
+      run: |
+        gem install bundler
+        bundle install --jobs 4 --retry 3 --path vendor/bundle
+
+    - name: Install yarn
+      run: npm install -g yarn
+
+    # NOTE: Yarn cache doesn't seem to be working quite yet
+    - name: Get yarn cache dir
+      id: yarn-cache-dir
+      run: echo "::set-output name=dir::$(yarn cache dir)"
+
+    - name: Yarn cache
+      id: cache-yarn
+      uses: actions/cache@v1
+      with:
+        path: ${{ steps.yarn-cache-dir.outputs.dir }}
+        key: yarn-${{ hashFiles('**/yarn.lock') }}
+
+    - name: Yarn install
+      run: yarn install
+
+    - name: Setup DB, Run tests
+      env:
+        PGHOST: postgres
+        PGUSER: postgres
+        PGPORT: ${{ job.services.postgres.ports[5432] }}
+        RAILS_ENV: test
+      run: |
+        bin/rails db:create db:schema:load
+        bundle exec rspec
+           
+             
+           
         
-        
-  deploy:
+  deployment:
     runs-on: ubuntu-latest
     
     steps:
