@@ -74,12 +74,20 @@ jobs:
       HEROKU_PRODUCTION_KEY: ${{ secrets.HEROKU_PRODUCTION_KEY }}
     
     steps:
-      - run: apk add ruby-dev # dpl needs ruby
-      run: apk add git # container doesn't have git for some reason
-      run: apk add curl # or curl?!?
-      run: gem install json_pure # another dumb error message removed by this line
-      run: gem install faraday -v 1.8.0 # this is getting old.
-      run: gem install dpl # this is the only line in the docs
-      run: gem install dpl-heroku # another one for fun
-      run: dpl --provider=heroku --app=env.HEROKU_APP_NAME --api-key=env.HEROKU_PRODUCTION_KEY
+      - name: dpl needs ruby
+        run: apk add ruby-dev
+      - name: container doesn't have git for some reason
+        run: apk add git 
+      - name: or curl
+        run: apk add curl
+      - name: another dumb error message removed by this line
+        run: gem install json_pure
+      - name: this is getting old.
+        run: gem install faraday -v 1.8.0
+      - name: this is the only line in the docs
+        run: gem install dpl
+      - name: another one for fun
+        run: gem install dpl-heroku
+      - name: finally, deploying
+        run: dpl --provider=heroku --app=env.HEROKU_APP_NAME --api-key=env.HEROKU_PRODUCTION_KEY
 
