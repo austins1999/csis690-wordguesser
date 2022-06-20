@@ -1,2 +1,70 @@
+
 name: GitHub CI
-on: [push]
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+env:
+  DOCKER_DRIVER: overlay2
+  DOCKER_TLS_CERTDIR: ""
+  DOCKER_HOST: tcp://docker:2375
+  CONTAINER_IMAGE: https://ghcr.io/$GITHUB_ACTOR/$GITHUB_REF_NAME:latest
+    # https://ghcr.io/ is the container registry
+    # GITHUB_ACTOR is the user who initiated the workflow
+    # GITHUB_REF_NAME is the branch/tag that initiated the workflow
+    # :latest specifies the most recent version (duh)
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Pre-check that Docker is installed
+      run: docker version
+    #- name: Build the Docker image
+      #run: docker build . --file Dockerfile --tag my-image-name:$(date +%s)
+    - name: Build the Docker image
+      run: docker build --pull -t $CONTAINER_IMAGE .
+    - name: Push the Docker image
+      run: docker push $CONTAINER_IMAGE  
+
+
+  rubocop:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    # If running on a self-hosted runner, check it meets the requirements
+    # listed at https://github.com/ruby/setup-ruby#using-self-hosted-runners
+    - name: Set up Ruby
+      uses: ruby/setup-ruby@f20f1eae726df008313d2e0d78c5e602562a1bcf
+      with:
+        ruby-version: 2.6
+
+    # This step is not necessary if you add the gem to your Gemfile
+    #- name: Install Code Scanning integration
+      #run: bundle add code-scanning-rubocop --version 0.3.0 --skip-install
+
+    - name: Install dependencies
+      run: bundle install
+
+    - name: Rubocop run
+      run: |
+        bash -c "
+          bundle exec rubocop --require code_scanning --format CodeScanning::SarifFormatter -o rubocop.sarif
+          [[ $? -ne 2 ]]
+        "
+    - name: Upload Sarif output
+      uses: github/codeql-action/upload-sarif@v2
+      with:
+        sarif_file: rubocop.sarif
