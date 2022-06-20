@@ -81,13 +81,13 @@ jobs:
       - name: or curl
         run: sudo apt-get install curl
       - name: another dumb error message removed by this line
-        run: gem install json_pure
+        run: sudo gem install json_pure
       - name: this is getting old.
-        run: gem install faraday -v 1.8.0
+        run: sudo gem install faraday -v 1.8.0
       - name: this is the only line in the docs
-        run: gem install dpl
+        run: sudo gem install dpl
       - name: another one for fun
-        run: gem install dpl-heroku
+        run: sudo gem install dpl-heroku
       - name: finally, deploying
         run: dpl --provider=heroku --app=env.HEROKU_APP_NAME --api-key=env.HEROKU_PRODUCTION_KEY
 
