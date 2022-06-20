@@ -66,28 +66,40 @@ jobs:
         "
         
 
+  #deploy:
+    #runs-on: ubuntu-latest
+    
+    #env:
+      #HEROKU_APP_NAME: 
+      #HEROKU_PRODUCTION_KEY: ${{ secrets.HEROKU_PRODUCTION_KEY }}
+    
+    #steps:
+      #- name: dpl needs ruby
+        #run: sudo apt-get install ruby-dev
+      #- name: container doesn't have git for some reason
+        #run: sudo apt-get install git 
+      #- name: or curl
+        #run: sudo apt-get install curl
+      #- name: another dumb error message removed by this line
+        #run: sudo gem install json_pure
+      #- name: this is getting old.
+        #run: sudo gem install faraday -v 1.8.0
+      #- name: this is the only line in the docs
+        #run: sudo gem install dpl
+      #- name: another one for fun
+        #run: sudo gem install dpl-heroku
+      #- name: finally, deploying
+        #run: dpl --provider=heroku --app=env.HEROKU_APP_NAME --api-key=env.HEROKU_PRODUCTION_KEY
+        
+        
   deploy:
     runs-on: ubuntu-latest
-    
-    env:
-      HEROKU_APP_NAME: ${{ secrets.HEROKU_APP_NAME }}
-      HEROKU_PRODUCTION_KEY: ${{ secrets.HEROKU_PRODUCTION_KEY }}
-    
     steps:
-      - name: dpl needs ruby
-        run: sudo apt-get install ruby-dev
-      - name: container doesn't have git for some reason
-        run: sudo apt-get install git 
-      - name: or curl
-        run: sudo apt-get install curl
-      - name: another dumb error message removed by this line
-        run: sudo gem install json_pure
-      - name: this is getting old.
-        run: sudo gem install faraday -v 1.8.0
-      - name: this is the only line in the docs
-        run: sudo gem install dpl
-      - name: another one for fun
-        run: sudo gem install dpl-heroku
-      - name: finally, deploying
-        run: dpl --provider=heroku --app=env.HEROKU_APP_NAME --api-key=env.HEROKU_PRODUCTION_KEY
+      - uses: actions/checkout@v2
+      - uses: akhileshns/heroku-deploy@v3.12.12 # This is the action
+        with:
+          heroku_api_key: ${{secrets.HEROKU_API_KEY}}
+          heroku_app_name: ${{ secrets.HEROKU_APP_NAME }}
+          heroku_email: ${{ secrets.HEROKU_ACC_EMAIL }}
+          usedocker: true
 
