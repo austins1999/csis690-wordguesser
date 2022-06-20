@@ -39,8 +39,7 @@ jobs:
 
   unit_testing:
    runs-on: ubuntu-latest
-    container:
-      image: ruby:2.6.6
+
 
     services:
       postgres:
@@ -56,6 +55,11 @@ jobs:
 
     steps:
     - uses: actions/checkout@v1
+   
+    - name: Set up Ruby
+      uses: ruby/setup-ruby@f20f1eae726df008313d2e0d78c5e602562a1bcf
+      with:
+        ruby-version: 2.6.6
 
     - uses: actions/setup-node@v1
       with:
